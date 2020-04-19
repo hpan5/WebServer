@@ -4,12 +4,13 @@ import java.util.Scanner;
 import java.nio.file.*;
 
 class MyServer {
-  //directories/dir
+  //directories/dir  check
   //prevention from crashing
   //method: close socket multithread clients & timeout
   //directoreis listing on the pages
   //password protect webpage using authorization header
   //advanced: https support
+
   private static void callNewPage(String s, OutputStream outputStream) throws IOException {
     String pageName = s.split(" ")[1];
     if (pageName.equals("/"))  {
@@ -18,19 +19,25 @@ class MyServer {
       pageName = pageName.substring(1);
     }
 
-    String fileName = pageName.equals("favicon.ico") ? pageName : pageName + ".html";
-    byte[] byteArr;
-    String header = "HTTP/1.1 200 OK\n\n";
-    try {
-      byteArr = Files.readAllBytes(Paths.get(fileName));
-    } catch (IOException ex) {
-      header = "HTTP/1.1 404\n\n";
-      byteArr = Files.readAllBytes(Paths.get("notfound.html"));
-    }
+    String filePath = pageName.equals("favicon.ico") ? pageName : pageName + ".html";
 
-    outputStream.write(header.getBytes());
-    outputStream.write(byteArr);
+    FileInfo fileInfo = readPathsAndgetHeaders(filePath);
+    outputStream.write(fileInfo.header.getBytes());
+    outputStream.write(fileInfo.byteArr);
   }
+
+  private static FileInfo readPathsAndgetHeaders(String filePath) throws IOException {
+    FileInfo fileInfo = new FileInfo();
+    fileInfo.header = "HTTP/1.1 200 OK\n\n";
+    try {
+      fileInfo.byteArr = Files.readAllBytes(Paths.get(filePath));
+    } catch (IOException ex) {
+      fileInfo.header = "HTTP/1.1 404\n\n";
+      fileInfo.byteArr = Files.readAllBytes(Paths.get("notfound.html"));
+    }
+    return fileInfo;
+  }
+
 
 
   public static void main(String[] args) throws IOException {
@@ -66,5 +73,14 @@ class MyServer {
 
 
     //serverSocket.close();
+  }
+}
+
+class FileInfo {
+  String header;
+  byte[] byteArr;
+  FileInfo() {
+    header = null;
+    byteArr = null;
   }
 }
